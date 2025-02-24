@@ -45,21 +45,8 @@ class AerofoilTestingApp:
             sample_sum = sample_sum + self.nau7802.read()
             sample_count -= 1
         return int(sample_sum / samples)    
-    
-    # Event handlers for UI
-    def update_independent_variable(self):
-        # Stub for update_independent_variable
-        print("Update Independent Variable button clicked")
-
-    def plot_file_data(self):
-        # Stub for plot_file_data
-        print("Plot File Data button clicked")
-
-    def show_file_stats(self):
-        # Stub for show_file_stats
-        print("Show File Stats button clicked")
-
-    def start_data_capture(self):
+ 
+     def start_data_capture(self):
         # Stub for start_data_capture
         print("Start Data Capture button clicked")
         # Enable NAU7802 digital and analog power
@@ -86,6 +73,19 @@ class AerofoilTestingApp:
 
         self.nau7802.channel = 1
         self.zero_channel()  # Calibrate and zero channel
+        
+    # Event handlers for UI
+    def update_independent_variable(self):
+        # Stub for update_independent_variable
+        print("Update Independent Variable button clicked")
+
+    def plot_file_data(self):
+        # Stub for plot_file_data
+        print("Plot File Data button clicked")
+
+    def show_file_stats(self):
+        # Stub for show_file_stats
+        print("Show File Stats button clicked")
 
     def __init__(self, root):
         self.root = root
