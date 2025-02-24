@@ -46,7 +46,7 @@ class AerofoilTestingApp:
             sample_count -= 1
         return int(sample_sum / samples)    
  
-     def start_data_capture(self):
+    def start_data_capture(self):
         # Stub for start_data_capture
         print("Start Data Capture button clicked")
         # Enable NAU7802 digital and analog power
