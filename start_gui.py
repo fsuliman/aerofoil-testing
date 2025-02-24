@@ -1,9 +1,52 @@
 import tkinter as tk
+import time
+import board
 from tkinter import Menu
 from tkinter import ttk
+from cedargrove_nau7802 import NAU7802
 
 class AerofoilTestingApp:
+    # Straing guage functions
+    def zero_channel(self):
+        """Initiate internal calibration for current channel.Use when scale is started,
+        a new channel is selected, or to adjust for measurement drift. Remove weight
+        and tare from load cell before executing."""
+        print(
+            "channel %1d calibrate.INTERNAL: %5s"
+            % (self.nau7802.channel, self.nau7802.calibrate("INTERNAL"))
+        )
+        print(
+            "channel %1d calibrate.OFFSET:   %5s"
+            % (self.nau7802.channel, self.nau7802.calibrate("OFFSET"))
+        )
+        print("...channel %1d zeroed" % self.nau7802.channel)
 
+    def recalibrate_guage(self):
+        # Stub for recalibrate_guage
+        print("Re-calibrate Guage button clicked")
+        print("*** Instantiate and calibrate load cells")
+        # Enable NAU7802 digital and analog power
+        enabled = self.nau7802.enable(True)
+        print("Digital and analog power enabled:", enabled)
+
+        print("REMOVE WEIGHTS FROM LOAD CELLS")
+        time.sleep(3)
+
+        self.nau7802.channel = 1
+        self.zero_channel()  # Calibrate and zero channel
+
+    def read_raw_value(self, samples=5):
+        """Read and average consecutive raw sample values. Return average raw value."""
+        sample_sum = 0
+        sample_count = samples
+        while sample_count > 0:
+            while not self.nau7802.available():
+                pass
+            sample_sum = sample_sum + self.nau7802.read()
+            sample_count -= 1
+        return int(sample_sum / samples)    
+    
+    # Event handlers for UI
     def update_independent_variable(self):
         # Stub for update_independent_variable
         print("Update Independent Variable button clicked")
@@ -19,14 +62,30 @@ class AerofoilTestingApp:
     def start_data_capture(self):
         # Stub for start_data_capture
         print("Start Data Capture button clicked")
+        # Enable NAU7802 digital and analog power
+        self.nau7802.enable(True)
+        self.currentGuageReading.set(float(self.read_raw_value()))
 
     def end_data_capture(self):
         # Stub for end_data_capture
         print("End Data Capture button clicked")
+        # Disable NAU7802 digital and analog power
+        enabled = self.nau7802.enable(False)
+        print("Digital and analog power enabled:", enabled)
 
     def recalibrate_guage(self):
         # Stub for recalibrate_guage
         print("Re-calibrate Guage button clicked")
+        print("*** Instantiate and calibrate load cells")
+        # Enable NAU7802 digital and analog power
+        enabled = self.nau7802.enable(True)
+        print("Digital and analog power enabled:", enabled)
+
+        print("REMOVE WEIGHTS FROM LOAD CELLS")
+        time.sleep(3)
+
+        self.nau7802.channel = 1
+        self.zero_channel()  # Calibrate and zero channel
 
     def __init__(self, root):
         self.root = root
@@ -105,6 +164,10 @@ class AerofoilTestingApp:
 
         # Configure frame2 grid
         frame2.grid_columnconfigure(1, weight=1)
+        
+        # Strain guage initialization
+        # Instantiate 24-bit load sensor ADC; two channels, default gain of 128
+        self.nau7802 = NAU7802(board.I2C(), address=0x2A, active_channels=2)
 
 def main():
     root = tk.Tk()
