@@ -81,14 +81,14 @@ class AerofoilTestingApp:
         ttk.Label(frame1, text="File mode:").grid(row=2, column=0, sticky="w")
         ttk.Combobox(frame1, textvariable=self.fileMode, values=["overwrite", "append"]).grid(row=2, column=1, sticky="ew")
 
-        ttk.Button(frame1, text="Update Independent Variable", command=self.update_independent_variable).grid(row=3, column=0, columnspan=2, sticky="ew")
-        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["airspeed", "angle of attack", "camber/shape ID"]).grid(row=4, column=0, columnspan=2, sticky="ew")
+        ttk.Button(frame1, text="Update Independent Variable", command=self.update_independent_variable).grid(row=3, column=0, sticky="ew")
+        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["airspeed", "angle of attack", "camber/shape ID"]).grid(row=3, column=1, sticky="ew")
 
         # frame1 buttons with callbacks
-        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=5, column=0, columnspan=2, sticky="ew")
-        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=6, column=0, columnspan=2, sticky="ew")
-        ttk.Button(frame1, text="Start Data Capture", command=self.start_data_capture).grid(row=7, column=0, columnspan=2, sticky="ew")
-        ttk.Button(frame1, text="End Data Capture", command=self.end_data_capture).grid(row=8, column=0, columnspan=2, sticky="ew")
+        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=4, column=0, sticky="ew")
+        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=4, column=1, sticky="ew")
+        ttk.Button(frame1, text="Start Data Capture", command=self.start_data_capture).grid(row=5, column=0, sticky="ew")
+        ttk.Button(frame1, text="End Data Capture", command=self.end_data_capture).grid(row=5, column=1, sticky="ew")
 
         # Configure frame1 grid
         frame1.grid_columnconfigure(1, weight=1)
