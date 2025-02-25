@@ -59,20 +59,6 @@ class AerofoilTestingApp:
         # Disable NAU7802 digital and analog power
         enabled = self.nau7802.enable(False)
         print("Digital and analog power enabled:", enabled)
-
-    def recalibrate_guage(self):
-        # Stub for recalibrate_guage
-        print("Re-calibrate Guage button clicked")
-        print("*** Instantiate and calibrate load cells")
-        # Enable NAU7802 digital and analog power
-        enabled = self.nau7802.enable(True)
-        print("Digital and analog power enabled:", enabled)
-
-        print("REMOVE WEIGHTS FROM LOAD CELLS")
-        time.sleep(3)
-
-        self.nau7802.channel = 1
-        self.zero_channel()  # Calibrate and zero channel
         
     # Event handlers for UI
     def update_independent_variable(self):
