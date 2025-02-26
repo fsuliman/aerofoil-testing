@@ -1,4 +1,5 @@
 import tkinter as tk
+import threading
 import time
 import board
 from tkinter import Menu
@@ -6,6 +7,10 @@ from tkinter import ttk
 from cedargrove_nau7802 import NAU7802
 
 class AerofoilTestingApp:
+    
+    samplesPerReading = 5
+    DIAGNOSTIC_LOGGING = True
+    
     # Straing guage functions
     def zero_channel(self):
         """Initiate internal calibration for current channel.Use when scale is started,
@@ -20,6 +25,7 @@ class AerofoilTestingApp:
             % (self.nau7802.channel, self.nau7802.calibrate("OFFSET"))
         )
         print("...channel %1d zeroed" % self.nau7802.channel)
+        
 
     def recalibrate_guage(self):
         # Stub for recalibrate_guage
@@ -30,12 +36,14 @@ class AerofoilTestingApp:
         print("Digital and analog power enabled:", enabled)
 
         print("REMOVE WEIGHTS FROM LOAD CELLS")
+        self.strainGuageStatus.set('Recalibrating...')
         time.sleep(3)
 
         self.nau7802.channel = 1
         self.zero_channel()  # Calibrate and zero channel
+        self.strainGuageStatus.set('Calibrated')
 
-    def read_raw_value(self, samples=5):
+    def read_raw_value(self, samples=samplesPerReading):
         """Read and average consecutive raw sample values. Return average raw value."""
         sample_sum = 0
         sample_count = samples
@@ -49,9 +57,21 @@ class AerofoilTestingApp:
     def start_data_capture(self):
         # Stub for start_data_capture
         print("Start Data Capture button clicked")
+        if (self.dataCaptureOn):
+            return
         # Enable NAU7802 digital and analog power
         self.nau7802.enable(True)
-        self.currentGuageReading.set(float(self.read_raw_value()))
+        self.dataCaptureOn=True
+        """ Create a thread to capture data without blocking the event thread """
+        self.dataCaptureThread = threading.Thread(target=self.data_capture_thread_run_method, args=())
+        self.dataCaptureThread.start()
+    
+    def data_capture_thread_run_method(self):
+        while(self.dataCaptureOn):
+            currentGaugeReading = float(self.read_raw_value())
+            if (self.DIAGNOSTIC_LOGGING):
+                print("channel %1.0f raw value: %7.0f" % (self.nau7802.channel, currentGaugeReading))
+            self.currentGuageReading.set(currentGaugeReading)
 
     def end_data_capture(self):
         # Stub for end_data_capture
@@ -59,6 +79,7 @@ class AerofoilTestingApp:
         # Disable NAU7802 digital and analog power
         enabled = self.nau7802.enable(False)
         print("Digital and analog power enabled:", enabled)
+        self.dataCaptureOn=False
         
     # Event handlers for UI
     def update_independent_variable(self):
@@ -154,6 +175,8 @@ class AerofoilTestingApp:
         # Strain guage initialization
         # Instantiate 24-bit load sensor ADC; two channels, default gain of 128
         self.nau7802 = NAU7802(board.I2C(), address=0x2A, active_channels=2)
+        self.dataCaptureOn=False
+        self.strainGuageStatus.set('Ready/Uncalibrated')
 
 def main():
     root = tk.Tk()
