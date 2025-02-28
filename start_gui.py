@@ -3,7 +3,7 @@ import threading
 import time
 import board
 from plot_util import box_plot_data
-from tkinter import Menu, ttk, simpledialog, filedialog
+from tkinter import Menu, ttk, simpledialog, filedialog, messagebox
 from cedargrove_nau7802 import NAU7802
 from csv_file_manager import CSVFileManager
 
@@ -60,6 +60,9 @@ class AerofoilTestingApp:
         print("Start Data Capture button clicked")
         if self.dataCaptureOn or self.csvFileManager.get_csv_file_object() == None:
             return
+        if (self.independentVariable.get() == "" or self.aerofoilIndependentVariable.get() == ""):
+            messagebox.showinfo(parent=self.root, title="Aerofoil Testing App", message="Please set independent variable fields before attempting data capture.")
+            return
         # Enable NAU7802 digital and analog power
         self.nau7802.enable(True)
         self.dataCaptureOn=True
@@ -92,8 +95,11 @@ class AerofoilTestingApp:
         # Stub for plot_file_data
         print("Plot File Data button clicked")
         filename = self.csvDataFilename.get()
+        if filename == "":
+            return
         indep_var_name, indep_var_values, data = self.csvFileManager.extract_csv_file_data_for_plotting(filename)
-        box_plot_data(indep_var_values, data, indep_var_name)
+        if data != [[]]:
+            box_plot_data(indep_var_values, data, indep_var_name)
 
     def show_file_stats(self):
         # Stub for show_file_stats
@@ -114,6 +120,9 @@ class AerofoilTestingApp:
 
     def close_file(self):
         self.csvFileManager.close_csv_file()
+    
+    def show_about(self):
+        messagebox.showinfo(parent=self.root, title="Aerofoil Testing App", message="About Aerofiol Testing Project", detail="This is Mikail Suliman's 5th Grade Science Project\nhttps://github.com/fsuliman/aerofoil-testing")
         
     def exit(self):
         self.csvFileManager.close_csv_file()
@@ -132,7 +141,6 @@ class AerofoilTestingApp:
         file_menu = Menu(menubar, tearoff=0)
         file_menu.add_command(label="New", command = self.new_file)
         file_menu.add_command(label="Open", command = self.open_file)
-        file_menu.add_command(label="Save")
         file_menu.add_command(label="Close", command = self.close_file)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command = self.exit)
@@ -140,7 +148,7 @@ class AerofoilTestingApp:
 
         # Create the Help menu
         help_menu = Menu(menubar, tearoff=0)
-        help_menu.add_command(label="About")
+        help_menu.add_command(label="About", command = self.show_about)
         menubar.add_cascade(label="Help", menu=help_menu)
 
         # Configure grid layout
@@ -192,6 +200,10 @@ class AerofoilTestingApp:
         # frame2 button with callback
         ttk.Button(frame2, text="Re-calibrate Guage", command=self.recalibrate_guage).grid(row=2, column=0, columnspan=2, sticky="ew")
 
+        # frame 2 image of Mikail
+        self.photo_image = tk.PhotoImage(file="airbus-a380.gif")
+        ttk.Label(frame2, image=self.photo_image).grid(row=3, column=1, sticky="w")
+                           
         # Configure frame2 grid
         frame2.grid_columnconfigure(1, weight=1)
         
