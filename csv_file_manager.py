@@ -57,7 +57,31 @@ class CSVFileManager:
         else:
             return ""
         
-        
+    def extract_csv_file_data_for_plotting(self, filename):
+        if self.file_obj == None:
+            self.file_obj = open(filename, 'r', encoding = 'utf-8', newline="")
+            csv_reader = csv.reader(self.file_obj, delimiter=',')
+            data = []
+            independent_var_values = []
+            # Extract all the independent variable names
+            independent_variable_name = csv_reader.__next__()[0] # read the header
+            for row in csv_reader:
+                if row[0] not in independent_var_values:
+                    independent_var_values.append(row[0])
+            # Extract all the data for each independent variable
+            for independent_var_value in independent_var_values:
+                indep_var_data_list = []
+                self.file_obj.seek(0,0)
+                csv_reader.__next__() # skip the header
+                for row in csv_reader:
+                    if row[0] == independent_var_value:
+                        indep_var_data_list.append(row[1])
+                data.append(indep_var_data_list)
+            return independent_variable_name, independent_var_values, data
+        else:
+            print("ERROR: Object's file is already open. Close it before performing data extraction for plotting.")
+            return "", [], [[]]
+
 """ Test code"""
 def main():
     csv_file_manager = CSVFileManager()
@@ -80,12 +104,17 @@ def main():
     csv_file_manager.new_csv_file("test-2.csv", "Camber/Shape ID")
     csv_file_manager.write_csv_file(["D-12", 0.1])
     csv_file_manager.write_csv_file(["D-13", 0.2])
+    csv_file_manager.write_csv_file(["D-13", 0.25])
+    csv_file_manager.write_csv_file(["D-13", 0.3])
+    csv_file_manager.write_csv_file(["D-13", 0.25])
+    csv_file_manager.write_csv_file(["D-13", 0.23])
     csv_file_manager.close_csv_file()
 
     csv_file_manager.open_csv_file_for_append("test-2.csv")
     csv_file_manager.write_csv_file(["D-14", 0.3])
     csv_file_manager.write_csv_file(["D-15", 0.4])
     csv_file_manager.close_csv_file()
+    print(csv_file_manager.extract_csv_file_data_for_plotting("test-2.csv"))
 
 if __name__ == "__main__":
     main()
