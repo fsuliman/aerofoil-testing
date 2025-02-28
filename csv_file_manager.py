@@ -31,13 +31,20 @@ class CSVFileManager:
             self.file_obj.close()
             self.file_obj = None
             print(f"Closed {self.file_name}")
+            
+    def get_csv_file_object(self):
+        if self.file_obj != None:
+            return(self.file_obj)
+        else:
+            return None    
 
     def write_csv_file(self, data):
-        csv_writer = csv.writer(self.file_obj, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-        # add a timestamp to the reading data
-        data.append(time.strftime("%Y-%m-%d %H:%M:%S"))
-        csv_writer.writerow(data)
-        print(f"Wrote {data} to {self.file_name}")
+        if self.file_obj != None:
+            csv_writer = csv.writer(self.file_obj, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            # add a timestamp to the reading data
+            data.append(time.strftime("%Y-%m-%d %H:%M:%S"))
+            csv_writer.writerow(data)
+            print(f"Wrote {data} to {self.file_name}")
     
     def sniff_independent_var_name_in_header(self):
         if self.file_obj != None:

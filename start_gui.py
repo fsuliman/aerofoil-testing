@@ -2,9 +2,9 @@ import tkinter as tk
 import threading
 import time
 import board
-from tkinter import Menu
-from tkinter import ttk
+from tkinter import Menu, ttk, simpledialog, filedialog
 from cedargrove_nau7802 import NAU7802
+from csv_file_manager import CSVFileManager
 
 class AerofoilTestingApp:
     
@@ -57,7 +57,7 @@ class AerofoilTestingApp:
     def start_data_capture(self):
         # Stub for start_data_capture
         print("Start Data Capture button clicked")
-        if (self.dataCaptureOn):
+        if self.dataCaptureOn or self.csvFileManager.get_csv_file_object() == None:
             return
         # Enable NAU7802 digital and analog power
         self.nau7802.enable(True)
@@ -71,6 +71,7 @@ class AerofoilTestingApp:
             currentGaugeReading = float(self.read_raw_value())
             if (self.DIAGNOSTIC_LOGGING):
                 print("channel %1.0f raw value: %7.0f" % (self.nau7802.channel, currentGaugeReading))
+            self.csvFileManager.write_csv_file([self.aerofoilIndependentVariable.get(),currentGaugeReading])
             self.currentGuageReading.set(currentGaugeReading)
 
     def end_data_capture(self):
@@ -93,10 +94,31 @@ class AerofoilTestingApp:
     def show_file_stats(self):
         # Stub for show_file_stats
         print("Show File Stats button clicked")
+        
+    """ File menu command handlers"""
+    def new_file(self):
+        file_name = simpledialog.askstring("New File", "Enter filename:", parent=self.root)
+        if file_name != None:
+            self.csvFileManager.new_csv_file(file_name, self.independentVariable.get())
+            self.csvDataFilename.set(file_name)
 
-    def __init__(self, root):
+    def open_file(self):
+        file_name = filedialog.askopenfilename(parent=self.root, filetypes=[("CSV Files","*.csv")],title="Open CSV File")
+        if (file_name != ()):
+            self.csvFileManager.open_csv_file_for_append(file_name)
+            self.csvDataFilename.set(file_name)
+
+    def close_file(self):
+        self.csvFileManager.close_csv_file()
+        
+    def exit(self):
+        self.csvFileManager.close_csv_file()
+        self.root.quit()
+
+    def __init__(self, root, fileManager):
         self.root = root
         self.root.title("Aerofoil Testing")
+        self.csvFileManager = fileManager
 
         # Create the menubar
         menubar = Menu(root)
@@ -104,12 +126,12 @@ class AerofoilTestingApp:
 
         # Create the File menu
         file_menu = Menu(menubar, tearoff=0)
-        file_menu.add_command(label="New")
-        file_menu.add_command(label="Open")
+        file_menu.add_command(label="New", command = self.new_file)
+        file_menu.add_command(label="Open", command = self.open_file)
         file_menu.add_command(label="Save")
-        file_menu.add_command(label="Close")
+        file_menu.add_command(label="Close", command = self.close_file)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=root.quit)
+        file_menu.add_command(label="Exit", command = self.exit)
         menubar.add_cascade(label="File", menu=file_menu)
 
         # Create the Help menu
@@ -144,17 +166,14 @@ class AerofoilTestingApp:
         ttk.Label(frame1, text="Aerofoil Independent Variable:").grid(row=1, column=0, sticky="w")
         ttk.Entry(frame1, textvariable=self.aerofoilIndependentVariable).grid(row=1, column=1, sticky="ew")
 
-        ttk.Label(frame1, text="File mode:").grid(row=2, column=0, sticky="w")
-        ttk.Combobox(frame1, textvariable=self.fileMode, values=["overwrite", "append"]).grid(row=2, column=1, sticky="ew")
-
-        ttk.Button(frame1, text="Update Independent Variable", command=self.update_independent_variable).grid(row=3, column=0, sticky="ew")
-        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["airspeed", "angle of attack", "camber/shape ID"]).grid(row=3, column=1, sticky="ew")
+        ttk.Label(frame1, text="Independent Variable:").grid(row=2, column=0, sticky="ew")
+        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["Airspeed", "Angle of attack", "Camber/Shape ID"]).grid(row=2, column=1, sticky="ew")
 
         # frame1 buttons with callbacks
-        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=4, column=0, sticky="ew")
-        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=4, column=1, sticky="ew")
-        ttk.Button(frame1, text="Start Data Capture", command=self.start_data_capture).grid(row=5, column=0, sticky="ew")
-        ttk.Button(frame1, text="End Data Capture", command=self.end_data_capture).grid(row=5, column=1, sticky="ew")
+        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=3, column=0, sticky="ew")
+        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=3, column=1, sticky="ew")
+        ttk.Button(frame1, text="Start Data Capture", command=self.start_data_capture).grid(row=4, column=0, sticky="ew")
+        ttk.Button(frame1, text="End Data Capture", command=self.end_data_capture).grid(row=4, column=1, sticky="ew")
 
         # Configure frame1 grid
         frame1.grid_columnconfigure(1, weight=1)
@@ -180,7 +199,8 @@ class AerofoilTestingApp:
 
 def main():
     root = tk.Tk()
-    app = AerofoilTestingApp(root)
+    csvFileManager = CSVFileManager()
+    app = AerofoilTestingApp(root, csvFileManager)
     root.mainloop()
 
 if __name__ == "__main__":
