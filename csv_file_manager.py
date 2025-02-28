@@ -60,6 +60,7 @@ class CSVFileManager:
     def extract_csv_file_data_for_plotting(self, filename):
         if self.file_obj == None:
             self.file_obj = open(filename, 'r', encoding = 'utf-8', newline="")
+            self.file_name = filename
             csv_reader = csv.reader(self.file_obj, delimiter=',')
             data = []
             independent_var_values = []
@@ -75,8 +76,9 @@ class CSVFileManager:
                 csv_reader.__next__() # skip the header
                 for row in csv_reader:
                     if row[0] == independent_var_value:
-                        indep_var_data_list.append(row[1])
+                        indep_var_data_list.append(float(row[1]))
                 data.append(indep_var_data_list)
+            self.close_csv_file()
             return independent_variable_name, independent_var_values, data
         else:
             print("ERROR: Object's file is already open. Close it before performing data extraction for plotting.")

@@ -2,6 +2,7 @@ import tkinter as tk
 import threading
 import time
 import board
+from plot_util import box_plot_data
 from tkinter import Menu, ttk, simpledialog, filedialog
 from cedargrove_nau7802 import NAU7802
 from csv_file_manager import CSVFileManager
@@ -90,6 +91,9 @@ class AerofoilTestingApp:
     def plot_file_data(self):
         # Stub for plot_file_data
         print("Plot File Data button clicked")
+        filename = self.csvDataFilename.get()
+        indep_var_name, indep_var_values, data = self.csvFileManager.extract_csv_file_data_for_plotting(filename)
+        box_plot_data(indep_var_values, data, indep_var_name)
 
     def show_file_stats(self):
         # Stub for show_file_stats
