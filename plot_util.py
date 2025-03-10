@@ -2,7 +2,7 @@ import matplotlib as matplot
 import matplotlib.pyplot as plt
 import numpy as np
 
-def box_plot_data(indep_var_values, data, x_label, y_label="lift force (Newtons)", title="Box plot of lift force as the independent variable changes"):
+def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes"):
     fig, ax = plt.subplots()
     ax.set_title(title)
     ax.set_xlabel(x_label)

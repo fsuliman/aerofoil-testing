@@ -11,6 +11,8 @@ class AerofoilTestingApp:
     
     samplesPerReading = 5
     DIAGNOSTIC_LOGGING = True
+    accelerationDueToGravity = 9.8 # m.s^-2
+    gaugeReadingAtTwentyGrams = 40544
     
     # Straing guage functions
     def zero_channel(self):
@@ -53,7 +55,8 @@ class AerofoilTestingApp:
                 pass
             sample_sum = sample_sum + self.nau7802.read()
             sample_count -= 1
-        return int(sample_sum / samples)    
+        raw_reading = int(sample_sum / samples)
+        return float((raw_reading/AerofoilTestingApp.gaugeReadingAtTwentyGrams)*0.02*AerofoilTestingApp.accelerationDueToGravity)
  
     def start_data_capture(self):
         # Stub for start_data_capture
@@ -73,7 +76,7 @@ class AerofoilTestingApp:
     def data_capture_thread_run_method(self):
         while(self.dataCaptureOn):
             currentGaugeReading = float(self.read_raw_value())
-            if (self.DIAGNOSTIC_LOGGING):
+            if (AerofoilTestingApp.DIAGNOSTIC_LOGGING):
                 print("channel %1.0f raw value: %7.0f" % (self.nau7802.channel, currentGaugeReading))
             self.csvFileManager.write_csv_file([self.aerofoilIndependentVariable.get(),currentGaugeReading])
             self.currentGuageReading.set(currentGaugeReading)
@@ -194,7 +197,7 @@ class AerofoilTestingApp:
         ttk.Label(frame2, text="Strain Guage Status:").grid(row=0, column=0, sticky="w")
         ttk.Entry(frame2, textvariable=self.strainGuageStatus).grid(row=0, column=1, sticky="ew")
 
-        ttk.Label(frame2, text="Current Reading:").grid(row=1, column=0, sticky="w")
+        ttk.Label(frame2, text="Current Reading(N):").grid(row=1, column=0, sticky="w")
         ttk.Entry(frame2, textvariable=self.currentGuageReading).grid(row=1, column=1, sticky="ew")
         
         # frame2 button with callback
