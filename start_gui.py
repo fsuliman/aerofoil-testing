@@ -177,12 +177,12 @@ class AerofoilTestingApp:
         # Widgets in frame1
         ttk.Label(frame1, text="CSV Data Filename:").grid(row=0, column=0, sticky="w")
         ttk.Entry(frame1, textvariable=self.csvDataFilename).grid(row=0, column=1, sticky="ew")
+        
+        ttk.Label(frame1, text="Independent Variable for CSV File Header:").grid(row=1, column=0, sticky="ew")
+        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["Airspeed", "Angle of attack", "Camber/NACA ID"]).grid(row=1, column=1, sticky="ew")
 
-        ttk.Label(frame1, text="Aerofoil Independent Variable:").grid(row=1, column=0, sticky="w")
-        ttk.Entry(frame1, textvariable=self.aerofoilIndependentVariable).grid(row=1, column=1, sticky="ew")
-
-        ttk.Label(frame1, text="Independent Variable:").grid(row=2, column=0, sticky="ew")
-        ttk.Combobox(frame1, textvariable=self.independentVariable, values=["Airspeed", "Angle of attack", "Camber/Shape ID"]).grid(row=2, column=1, sticky="ew")
+        ttk.Label(frame1, text="        Enter independent variable value:").grid(row=2, column=0, sticky="w")
+        ttk.Entry(frame1, textvariable=self.aerofoilIndependentVariable).grid(row=2, column=1, sticky="ew")
 
         # frame1 buttons with callbacks
         ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=3, column=0, sticky="ew")
