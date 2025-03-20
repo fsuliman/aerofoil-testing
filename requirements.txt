@@ -1,0 +1,4 @@
+Adafruit_Blinka==8.53.0
+cedargrove_nau7802==2.1.1
+matplotlib==3.6.3
+numpy==1.24.2
