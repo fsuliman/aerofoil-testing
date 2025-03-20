@@ -94,7 +94,7 @@ class AerofoilTestingApp:
         # Stub for update_independent_variable
         print("Update Independent Variable button clicked")
 
-    def plot_file_data(self):
+    def plot_file_data(self, showPlot=True):
         # Stub for plot_file_data
         print("Plot File Data button clicked")
         filename = self.csvDataFilename.get()
@@ -102,11 +102,16 @@ class AerofoilTestingApp:
             return
         indep_var_name, indep_var_values, data = self.csvFileManager.extract_csv_file_data_for_plotting(filename)
         if data != [[]]:
-            box_plot_data(indep_var_values, data, indep_var_name)
+            return box_plot_data(indep_var_values, data, indep_var_name, show_plot=showPlot)
 
     def show_file_stats(self):
         # Stub for show_file_stats
         print("Show File Stats button clicked")
+        file_stats = ''
+        for str in self.plot_file_data(showPlot=False):
+            file_stats=file_stats+str+'\n'
+        messagebox.showinfo(parent=self.root, title="Current file statistics", message=f"{file_stats}", detail="")
+
         
     """ File menu command handlers"""
     def new_file(self):

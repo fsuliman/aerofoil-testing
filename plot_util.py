@@ -2,7 +2,7 @@ import matplotlib as matplot
 import matplotlib.pyplot as plt
 import numpy as np
 
-def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes"):
+def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes", show_plot=True):
     fig, ax = plt.subplots()
     ax.set_title(title)
     ax.set_xlabel(x_label)
@@ -12,5 +12,10 @@ def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)
     colors = ['tomato', 'lightcoral', 'orange', 'peachpuff', 'pink', 'lightyellow', 'lightgrey']
     for patch, color in zip(bplot['boxes'], colors):
         patch.set_facecolor(color)
-
-    plt.show()
+    iterator = iter(indep_var_values)
+    stats_str = []
+    for means in bplot['means']:
+        stats_str.append(f"x-value: {next(iterator)} ; mean lift: {means.get_ydata(orig=False)[0]} N")
+    if show_plot == True:
+        plt.show()
+    return stats_str 
