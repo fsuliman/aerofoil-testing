@@ -25,7 +25,7 @@ import tkinter as tk
 import threading
 import time
 import board
-from plot_util import box_plot_data
+from plot_util import RealTimePlot, box_plot_data
 from tkinter import Menu, ttk, simpledialog, filedialog, messagebox
 from cedargrove_nau7802 import NAU7802
 from csv_file_manager import CSVFileManager
@@ -95,6 +95,8 @@ class AerofoilTestingApp:
         """ Create a thread to capture data without blocking the event thread """
         self.dataCaptureThread = threading.Thread(target=self.data_capture_thread_run_method, args=())
         self.dataCaptureThread.start()
+        # Show real time plot
+        self.realTimePlotter.real_time_plot_show()
     
     def data_capture_thread_run_method(self):
         while(self.dataCaptureOn):
@@ -103,6 +105,8 @@ class AerofoilTestingApp:
                 print("channel %1.0f raw value: %7.0f" % (self.nau7802.channel, currentGaugeReading))
             self.csvFileManager.write_csv_file([self.aerofoilIndependentVariable.get(),currentGaugeReading])
             self.currentGuageReading.set(currentGaugeReading)
+            #Send sample to real-time plot
+            self.realTimePlotter.real_time_plot_push_y_val(currentGaugeReading)
 
     def end_data_capture(self):
         # Stub for end_data_capture
@@ -111,6 +115,7 @@ class AerofoilTestingApp:
         enabled = self.nau7802.enable(False)
         print("Digital and analog power enabled:", enabled)
         self.dataCaptureOn=False
+        #self.realTimePlotter.real_time_plot_hide()
         
     # Event handlers for UI
     def update_independent_variable(self):
@@ -159,10 +164,11 @@ class AerofoilTestingApp:
         self.csvFileManager.close_csv_file()
         self.root.quit()
 
-    def __init__(self, root, fileManager):
+    def __init__(self, root, fileManager, realTimePlot):
         self.root = root
         self.root.title("Aerofoil Testing")
         self.csvFileManager = fileManager
+        self.realTimePlotter = realTimePlot
 
         # Create the menubar
         menubar = Menu(root)
@@ -247,7 +253,8 @@ class AerofoilTestingApp:
 def main():
     root = tk.Tk()
     csvFileManager = CSVFileManager()
-    app = AerofoilTestingApp(root, csvFileManager)
+    realTimePlot = RealTimePlot()
+    app = AerofoilTestingApp(root, csvFileManager, realTimePlot)
     root.mainloop()
 
 if __name__ == "__main__":

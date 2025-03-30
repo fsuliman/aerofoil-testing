@@ -23,7 +23,56 @@ SOFTWARE.
 """
 import matplotlib as matplot
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
+
+class RealTimePlot:
+    
+    def __init__(self, x_label="Real-time Samples", y_label="Lift force (Newtons)", title="Line plot of Real-Time data capture"):
+        self.file_obj = None
+        self.independent_var_name_in_header = None
+
+        # Real time plot parameters
+        self.x_len = 200 # Number of points to display
+        self.y_range = [-0.005, 0.04] # Range of possible y values to display
+        #self.real_time_fig = plt.subplots()
+        self.real_time_plot_line = None
+        self.y_values = [0] * self.x_len
+        self.xs = list(range(0, 200))
+        self.ani = None
+        
+        self.real_time_fig, self.ax = plt.subplots()
+        self.ax.set_ylim(self.y_range)
+        # Create a blank line. We will update the line in real_time_plot_animate
+        self.real_time_plot_line, = self.ax.plot(self.xs, self.y_values)
+        # Add axes and plot labels
+        self.ax.set_title(title)
+        self.ax.set_xlabel(x_label)
+        self.ax.set_ylabel(y_label)
+        # Set up plot to call real_time_plot_animate() function periodically
+        #self.ani = animation.FuncAnimation(self.real_time_fig,self.real_time_plot_animate,fargs=(self.y_values,),interval=1000,blit=False)
+        self.ani = animation.FuncAnimation(self.real_time_fig,self.real_time_plot_animate,interval=1000,blit=True)
+
+
+    def real_time_plot_animate(self, i): #, y_vals):
+        # Update line with new y values
+        #print('====> here!', y_vals)
+        self.real_time_plot_line.set_ydata(self.y_values)
+        return self.real_time_plot_line,
+
+    def real_time_plot_show(self):
+        plt.show()
+        
+    def real_time_plot_hide(self):
+        plt.hide()
+        
+    def real_time_plot_push_y_val(self, y_val):
+        # Add y_val to list
+        self.y_values.append(y_val)
+        # Limit y list to set number of items
+        self.y_values = self.y_values[-self.x_len:]
+
+
 
 def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes", show_plot=True):
     fig, ax = plt.subplots()
