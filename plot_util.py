@@ -26,10 +26,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
-class RealTimePlot:
+class PlotUtility:
     
     def __init__(self, x_label="Real-time Samples", y_label="Lift force (Newtons)", title="Line plot of Real-Time data capture"):
         self.file_obj = None
+        self.box_plot_fig = None
+        self.bplot = None
         self.independent_var_name_in_header = None
 
         # Real time plot parameters
@@ -60,11 +62,11 @@ class RealTimePlot:
         self.real_time_plot_line.set_ydata(self.y_values)
         return self.real_time_plot_line,
 
-    def real_time_plot_show(self):
+    def plot_show(self):
         plt.show()
         
-    def real_time_plot_hide(self):
-        plt.hide()
+    def plot_close(self):
+        plt.close(fig="all")
         
     def real_time_plot_push_y_val(self, y_val):
         # Add y_val to list
@@ -72,22 +74,21 @@ class RealTimePlot:
         # Limit y list to set number of items
         self.y_values = self.y_values[-self.x_len:]
 
-
-
-def box_plot_data(indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes", show_plot=True):
-    fig, ax = plt.subplots()
-    ax.set_title(title)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    bplot = ax.boxplot(data, patch_artist=True, labels = indep_var_values, showmeans=True, meanline=True, meanprops={"color":"green"})
-    # do color filling
-    colors = ['tomato', 'lightcoral', 'orange', 'peachpuff', 'pink', 'lightyellow', 'lightgrey']
-    for patch, color in zip(bplot['boxes'], colors):
-        patch.set_facecolor(color)
-    iterator = iter(indep_var_values)
-    stats_str = []
-    for means in bplot['means']:
-        stats_str.append(f"x-value: {next(iterator)} ; mean lift: {means.get_ydata(orig=False)[0]} N")
-    if show_plot == True:
-        plt.show()
-    return stats_str 
+    def box_plot_data(self, indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes", show_plot=True):
+        if self.box_plot_fig == None:
+            self.box_plot_fig, ax = plt.subplots()
+            ax.set_title(title)
+            ax.set_xlabel(x_label)
+            ax.set_ylabel(y_label)
+            self.bplot = ax.boxplot(data, patch_artist=True, labels = indep_var_values, showmeans=True, meanline=True, meanprops={"color":"green"})
+            # do color filling
+            colors = ['tomato', 'lightcoral', 'orange', 'peachpuff', 'pink', 'lightyellow', 'lightgrey']
+            for patch, color in zip(self.bplot['boxes'], colors):
+                patch.set_facecolor(color)
+        iterator = iter(indep_var_values)
+        stats_str = []    
+        for means in self.bplot['means']:
+            stats_str.append(f"x-value: {next(iterator)} ; mean lift: {means.get_ydata(orig=False)[0]} N")
+        if show_plot == True:
+            plt.show()
+        return stats_str 

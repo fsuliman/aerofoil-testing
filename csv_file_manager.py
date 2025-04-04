@@ -25,6 +25,9 @@ import csv
 import time
 
 class CSVFileManager:
+    
+    DIAGNOSTIC_LOGGING = False
+    
     def __init__(self):
         self.file_obj = None
         self.independent_var_name_in_header = None
@@ -67,7 +70,8 @@ class CSVFileManager:
             # add a timestamp to the reading data
             data.append(time.strftime("%Y-%m-%d %H:%M:%S"))
             csv_writer.writerow(data)
-            print(f"Wrote {data} to {self.file_name}")
+            if (CSVFileManager.DIAGNOSTIC_LOGGING):
+                print(f"Wrote {data} to {self.file_name}")
     
     def sniff_independent_var_name_in_header(self):
         if self.file_obj != None:

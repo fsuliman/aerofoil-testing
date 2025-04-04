@@ -25,7 +25,7 @@ import tkinter as tk
 import threading
 import time
 import board
-from plot_util import RealTimePlot, box_plot_data
+from plot_util import PlotUtility
 from tkinter import Menu, ttk, simpledialog, filedialog, messagebox
 from cedargrove_nau7802 import NAU7802
 from csv_file_manager import CSVFileManager
@@ -33,10 +33,10 @@ from csv_file_manager import CSVFileManager
 class AerofoilTestingApp:
     
     samplesPerReading = 5
-    DIAGNOSTIC_LOGGING = True
+    DIAGNOSTIC_LOGGING = False
     accelerationDueToGravity = 9.8 # m.s^-2
     gaugeReadingAtTwentyGrams = 40544
-    
+
     # Straing guage functions
     def zero_channel(self):
         """Initiate internal calibration for current channel.Use when scale is started,
@@ -96,7 +96,7 @@ class AerofoilTestingApp:
         self.dataCaptureThread = threading.Thread(target=self.data_capture_thread_run_method, args=())
         self.dataCaptureThread.start()
         # Show real time plot
-        self.realTimePlotter.real_time_plot_show()
+        self.plotUtility.plot_show()
     
     def data_capture_thread_run_method(self):
         while(self.dataCaptureOn):
@@ -106,7 +106,7 @@ class AerofoilTestingApp:
             self.csvFileManager.write_csv_file([self.aerofoilIndependentVariable.get(),currentGaugeReading])
             self.currentGuageReading.set(currentGaugeReading)
             #Send sample to real-time plot
-            self.realTimePlotter.real_time_plot_push_y_val(currentGaugeReading)
+            self.plotUtility.real_time_plot_push_y_val(currentGaugeReading)
 
     def end_data_capture(self):
         # Stub for end_data_capture
@@ -115,7 +115,6 @@ class AerofoilTestingApp:
         enabled = self.nau7802.enable(False)
         print("Digital and analog power enabled:", enabled)
         self.dataCaptureOn=False
-        #self.realTimePlotter.real_time_plot_hide()
         
     # Event handlers for UI
     def update_independent_variable(self):
@@ -127,18 +126,31 @@ class AerofoilTestingApp:
         print("Plot File Data button clicked")
         filename = self.csvDataFilename.get()
         if filename == "":
-            return
+            messagebox.showerror(parent=self.root, title="Error", message="No data file open for read-only. Please open a data file for read-only.", detail="")
+            if showPlot == False:
+                return []
+            else:
+                return
         indep_var_name, indep_var_values, data = self.csvFileManager.extract_csv_file_data_for_plotting(filename)
-        if data != [[]]:
-            return box_plot_data(indep_var_values, data, indep_var_name, show_plot=showPlot)
-
+        if data == [[]]:
+            messagebox.showerror(parent=self.root, title="Error", message="Data file is open. Please close it before performing plot.", detail="")
+            if showPlot == False:
+                return []
+            else:
+                return
+        else:
+            return self.plotUtility.box_plot_data(indep_var_values, data, indep_var_name, show_plot=showPlot)
+        
     def show_file_stats(self):
         # Stub for show_file_stats
         print("Show File Stats button clicked")
-        file_stats = ''
-        for str in self.plot_file_data(showPlot=False):
-            file_stats=file_stats+str+'\n'
-        messagebox.showinfo(parent=self.root, title="Current file statistics", message=f"{file_stats}", detail="")
+        file_stats_list = self.plot_file_data(showPlot=False)
+        if file_stats_list == []:
+            return
+        stats_info_msg = ''
+        for str in file_stats_list:
+            stats_info_msg=stats_info_msg+str+'\n'
+        messagebox.showinfo(parent=self.root, title="Current file statistics", message=f"{stats_info_msg}", detail="")
 
         
     """ File menu command handlers"""
@@ -162,14 +174,15 @@ class AerofoilTestingApp:
         
     def exit(self):
         self.csvFileManager.close_csv_file()
-        self.root.quit()
+        self.plotUtility.plot_close()
+        self.root.destroy()
 
-    def __init__(self, root, fileManager, realTimePlot):
+    def __init__(self, root, fileManager, plotUtility):
         self.root = root
         self.root.title("Aerofoil Testing")
         self.csvFileManager = fileManager
-        self.realTimePlotter = realTimePlot
-
+        self.plotUtility = plotUtility
+        
         # Create the menubar
         menubar = Menu(root)
         root.config(menu=menubar)
@@ -193,7 +206,7 @@ class AerofoilTestingApp:
         root.grid_columnconfigure(0, weight=1)
         root.grid_columnconfigure(1, weight=1)
 
-        # Create two independent frames using ttk
+        # Create two independent side-by-side frames
         frame1 = ttk.Frame(root, padding="3 3 12 12")
         frame1.grid(row=0, column=0, sticky="nsew")
 
@@ -218,11 +231,16 @@ class AerofoilTestingApp:
         ttk.Label(frame1, text="        Enter independent variable value:").grid(row=2, column=0, sticky="w")
         ttk.Entry(frame1, textvariable=self.aerofoilIndependentVariable).grid(row=2, column=1, sticky="ew")
 
+        # Separator space
+        ttk.Label(frame1, text="                   ").grid(row=3, column=0, columnspan=2, sticky="ew")
+        
         # frame1 buttons with callbacks
-        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=3, column=0, sticky="ew")
-        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=3, column=1, sticky="ew")
+        ttk.Label(frame1, text="                   ").grid(row=3, column=0, columnspan=2, sticky="ew")
         ttk.Button(frame1, text="Start Data Capture", command=self.start_data_capture).grid(row=4, column=0, sticky="ew")
-        ttk.Button(frame1, text="End Data Capture", command=self.end_data_capture).grid(row=4, column=1, sticky="ew")
+        ttk.Button(frame1, text="Stop Data Capture", command=self.end_data_capture).grid(row=4, column=1, sticky="ew")
+        ttk.Label(frame1, text="                   ").grid(row=5, column=0, columnspan=2, sticky="ew")
+        ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=6, column=0, sticky="ew")
+        ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=6, column=1, sticky="ew")
 
         # Configure frame1 grid
         frame1.grid_columnconfigure(1, weight=1)
@@ -230,16 +248,17 @@ class AerofoilTestingApp:
         # Widgets in frame2
         ttk.Label(frame2, text="Strain Guage Status:").grid(row=0, column=0, sticky="w")
         ttk.Entry(frame2, textvariable=self.strainGuageStatus).grid(row=0, column=1, sticky="ew")
-
-        ttk.Label(frame2, text="Current Reading(N):").grid(row=1, column=0, sticky="w")
-        ttk.Entry(frame2, textvariable=self.currentGuageReading).grid(row=1, column=1, sticky="ew")
-        
         # frame2 button with callback
-        ttk.Button(frame2, text="Re-calibrate Guage", command=self.recalibrate_guage).grid(row=2, column=0, columnspan=2, sticky="ew")
+        ttk.Button(frame2, text="Re-calibrate Guage", command=self.recalibrate_guage).grid(row=1, column=0, columnspan=2, sticky="ew")
+
+        ttk.Label(frame2, text="                   ").grid(row=2, column=0, columnspan=2, sticky="ew")
+        ttk.Label(frame2, text="Current Reading(N):").grid(row=3, column=0, sticky="w")
+        ttk.Entry(frame2, textvariable=self.currentGuageReading).grid(row=3, column=1, sticky="ew")
+        
 
         # frame 2 image of Mikail
         self.photo_image = tk.PhotoImage(file="airbus-a380.gif")
-        ttk.Label(frame2, image=self.photo_image).grid(row=3, column=1, sticky="w")
+        ttk.Label(frame2, image=self.photo_image).grid(row=4, column=1, sticky="w")
                            
         # Configure frame2 grid
         frame2.grid_columnconfigure(1, weight=1)
@@ -253,8 +272,8 @@ class AerofoilTestingApp:
 def main():
     root = tk.Tk()
     csvFileManager = CSVFileManager()
-    realTimePlot = RealTimePlot()
-    app = AerofoilTestingApp(root, csvFileManager, realTimePlot)
+    plotUtility = PlotUtility()
+    app = AerofoilTestingApp(root, csvFileManager, plotUtility)
     root.mainloop()
 
 if __name__ == "__main__":
