@@ -73,6 +73,15 @@ class PlotUtility:
         self.y_values.append(y_val)
         # Limit y list to set number of items
         self.y_values = self.y_values[-self.x_len:]
+        
+    def real_time_plot_zero(self):
+        self.y_values = [0] * self.x_len
+        
+    def box_plot_clear(self):
+        if (self.box_plot_fig != None):
+            plt.close(fig =self.box_plot_fig) 
+            self.box_plot_fig = None
+        
 
     def box_plot_data(self, indep_var_values, data, x_label, y_label="Lift force (Newtons)", title="Box plot of lift force as the independent variable changes", show_plot=True):
         if self.box_plot_fig == None:

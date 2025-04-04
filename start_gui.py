@@ -108,6 +108,9 @@ class AerofoilTestingApp:
             #Send sample to real-time plot
             self.plotUtility.real_time_plot_push_y_val(currentGaugeReading)
 
+    def real_time_plot_zero(self):
+        self.plotUtility.real_time_plot_zero()
+        
     def end_data_capture(self):
         # Stub for end_data_capture
         print("End Data Capture button clicked")
@@ -140,7 +143,7 @@ class AerofoilTestingApp:
                 return
         else:
             return self.plotUtility.box_plot_data(indep_var_values, data, indep_var_name, show_plot=showPlot)
-        
+            
     def show_file_stats(self):
         # Stub for show_file_stats
         print("Show File Stats button clicked")
@@ -159,12 +162,14 @@ class AerofoilTestingApp:
         if file_name != None:
             self.csvFileManager.new_csv_file(file_name, self.independentVariable.get())
             self.csvDataFilename.set(file_name)
+        self.plotUtility.box_plot_clear()
 
     def open_file(self):
         file_name = filedialog.askopenfilename(parent=self.root, filetypes=[("CSV Files","*.csv")],title="Open CSV File")
         if (file_name != ()):
             self.csvFileManager.open_csv_file_for_append(file_name)
             self.csvDataFilename.set(file_name)
+        self.plotUtility.box_plot_clear()
 
     def close_file(self):
         self.csvFileManager.close_csv_file()
@@ -241,6 +246,8 @@ class AerofoilTestingApp:
         ttk.Label(frame1, text="                   ").grid(row=5, column=0, columnspan=2, sticky="ew")
         ttk.Button(frame1, text="Plot File Data", command=self.plot_file_data).grid(row=6, column=0, sticky="ew")
         ttk.Button(frame1, text="Show File Stats", command=self.show_file_stats).grid(row=6, column=1, sticky="ew")
+        ttk.Label(frame1, text="                   ").grid(row=7, column=0, columnspan=2, sticky="ew")
+        ttk.Button(frame1, text="Zero Real-time Plot", command=self.real_time_plot_zero).grid(row=8, column=0, sticky="ew")
 
         # Configure frame1 grid
         frame1.grid_columnconfigure(1, weight=1)
