@@ -25,11 +25,12 @@ import matplotlib as matplot
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import threading
 
 class PlotUtility:
     
     def __init__(self, x_label="Real-time Samples", y_label="Lift force (Newtons)", title="Line plot of Real-Time data capture"):
-        self.file_obj = None
+        self._lock = threading.Lock()
         self.box_plot_fig = None
         self.bplot = None
         self.independent_var_name_in_header = None
@@ -56,11 +57,10 @@ class PlotUtility:
         self.ani = animation.FuncAnimation(self.real_time_fig,self.real_time_plot_animate,interval=1000,blit=True)
 
 
-    def real_time_plot_animate(self, i): #, y_vals):
-        # Update line with new y values
-        #print('====> here!', y_vals)
-        self.real_time_plot_line.set_ydata(self.y_values)
-        return self.real_time_plot_line,
+    def real_time_plot_animate(self, i):
+        with self._lock:
+            self.real_time_plot_line.set_ydata(self.y_values)
+            return self.real_time_plot_line,
 
     def plot_show(self):
         plt.show()
@@ -69,13 +69,15 @@ class PlotUtility:
         plt.close(fig="all")
         
     def real_time_plot_push_y_val(self, y_val):
-        # Add y_val to list
-        self.y_values.append(y_val)
-        # Limit y list to set number of items
-        self.y_values = self.y_values[-self.x_len:]
+        with self._lock:
+            # Add y_val to list
+            self.y_values.append(y_val)
+            # Limit y list to set number of items
+            self.y_values = self.y_values[-self.x_len:]
         
     def real_time_plot_zero(self):
-        self.y_values = [0] * self.x_len
+        with self._lock:
+            self.y_values = [0] * self.x_len
         
     def box_plot_clear(self):
         if (self.box_plot_fig != None):
